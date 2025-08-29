@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { sources, divisions, products } from "@/data/mockData";
+import { divisions } from "@/data/mockData";
+import { useSources } from "@/hooks/useSources";
+import { useProducts } from "@/hooks/useProducts";
 import { CustomerStatus } from "@/types/crm";
 import { X } from "lucide-react";
 
@@ -36,6 +38,9 @@ interface AddCustomerFormProps {
 }
 
 export function AddCustomerForm({ open, onOpenChange, onSubmit }: AddCustomerFormProps) {
+  const { sources } = useSources();
+  const { products } = useProducts();
+  
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
