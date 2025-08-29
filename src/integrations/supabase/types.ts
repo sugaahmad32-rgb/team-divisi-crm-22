@@ -56,6 +56,7 @@ export type Database = {
           company: string | null
           created_at: string
           description: string | null
+          division_id: string | null
           email: string
           estimation_value: number | null
           id: string
@@ -71,6 +72,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           description?: string | null
+          division_id?: string | null
           email: string
           estimation_value?: number | null
           id?: string
@@ -86,6 +88,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           description?: string | null
+          division_id?: string | null
           email?: string
           estimation_value?: number | null
           id?: string
@@ -98,6 +101,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "customers_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "customers_source_id_fkey"
             columns: ["source_id"]
             isOneToOne: false
@@ -105,6 +115,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      divisions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       interactions: {
         Row: {

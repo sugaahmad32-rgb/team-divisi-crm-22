@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { divisions } from "@/data/mockData";
 import { useSources } from "@/hooks/useSources";
 import { useProducts } from "@/hooks/useProducts";
+import { useDivisions } from "@/hooks/useDivisions";
 import { CustomerStatus } from "@/types/crm";
 import { X } from "lucide-react";
 
@@ -23,7 +23,7 @@ const customerSchema = z.object({
   address: z.string().optional(),
   status: z.enum(['new', 'cold', 'warm', 'hot', 'deal'] as const),
   source_id: z.string().min(1, "Source is required"),
-  division_id: z.string().min(1, "Division is required"),
+  division_id: z.string().optional(),
   estimation_value: z.string().optional(),
   description: z.string().optional(),
   products: z.array(z.string()).optional(),
@@ -40,6 +40,7 @@ interface AddCustomerFormProps {
 export function AddCustomerForm({ open, onOpenChange, onSubmit }: AddCustomerFormProps) {
   const { sources } = useSources();
   const { products } = useProducts();
+  const { divisions } = useDivisions();
   
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
@@ -238,7 +239,7 @@ export function AddCustomerForm({ open, onOpenChange, onSubmit }: AddCustomerFor
                 name="division_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Division *</FormLabel>
+                    <FormLabel>Division</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>

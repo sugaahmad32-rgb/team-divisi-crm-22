@@ -12,6 +12,7 @@ export interface Customer {
   address?: string;
   status: 'new' | 'cold' | 'warm' | 'hot' | 'deal';
   source_id: string;
+  division_id?: string;
   estimation_value?: number;
   description?: string;
   created_at: string;
@@ -20,6 +21,7 @@ export interface Customer {
 
 export interface CustomerWithRelations extends Customer {
   sources?: { name: string };
+  divisions?: { name: string };
   customer_products?: { products: { name: string; price: number } }[];
 }
 
@@ -36,6 +38,7 @@ export const useCustomers = () => {
         .select(`
           *,
           sources (name),
+          divisions (name),
           customer_products (
             products (name, price)
           )
@@ -74,6 +77,7 @@ export const useCustomers = () => {
         .select(`
           *,
           sources (name),
+          divisions (name),
           customer_products (
             products (name, price)
           )
@@ -113,6 +117,7 @@ export const useCustomers = () => {
     address?: string;
     status: 'new' | 'cold' | 'warm' | 'hot' | 'deal';
     source_id: string;
+    division_id?: string;
     estimation_value?: number;
     description?: string;
     products?: string[];
