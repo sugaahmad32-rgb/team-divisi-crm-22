@@ -1,11 +1,13 @@
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel, SidebarGroupContent } from "@/components/ui/sidebar";
-import { BarChart3, Users, Calendar, Settings, Building2, UserCheck, TrendingUp, Phone } from "lucide-react";
+import { BarChart3, Users, Calendar, Settings, Building2, UserCheck, TrendingUp, Phone, Package, Globe } from "lucide-react";
 import { currentUser } from "@/data/mockData";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3 },
   { name: 'Customers', href: '/customers', icon: Users },
+  { name: 'Products', href: '/products', icon: Package },
+  { name: 'Sources', href: '/sources', icon: Globe },
   { name: 'Follow-ups', href: '/followups', icon: Calendar },
   { name: 'Analytics', href: '/analytics', icon: TrendingUp },
 ];
