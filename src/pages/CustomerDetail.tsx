@@ -34,8 +34,11 @@ const CustomerDetail = () => {
   useEffect(() => {
     const loadCustomer = async () => {
       if (id) {
+        console.log('Loading customer with ID:', id);
         const customerData = await fetchCustomer(id);
         setCustomer(customerData);
+        setLoading(false);
+      } else {
         setLoading(false);
       }
     };

@@ -57,6 +57,18 @@ export const useCustomers = () => {
 
   const fetchCustomer = async (id: string): Promise<CustomerWithRelations | null> => {
     try {
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(id)) {
+        console.error('Invalid UUID format:', id);
+        toast({
+          title: "Error",
+          description: "Invalid customer ID format",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('customers')
         .select(`
@@ -67,11 +79,22 @@ export const useCustomers = () => {
           )
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) {
+        toast({
+          title: "Error",
+          description: "Customer not found",
+          variant: "destructive",
+        });
+        return null;
+      }
+      
       return data as CustomerWithRelations;
     } catch (error) {
+      console.error('Error fetching customer:', error);
       toast({
         title: "Error",
         description: "Failed to fetch customer",
