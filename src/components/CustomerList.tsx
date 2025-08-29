@@ -2,25 +2,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "./StatusBadge";
-import { customers, sources, divisions, currentUser, getCustomersByUser } from "@/data/mockData";
-import { Search, Plus, Phone, Mail, Building2, DollarSign } from "lucide-react";
+import { Search, Plus, Phone, Mail, Building2, DollarSign, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AddCustomerForm } from "./AddCustomerForm";
-import { toast } from "@/hooks/use-toast";
+import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+import { useCustomers, Customer } from "@/hooks/useCustomers";
+import { useSources } from "@/hooks/useSources";
 
 export function CustomerList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [deletingCustomer, setDeletingCustomer] = useState<Customer | null>(null);
   const navigate = useNavigate();
   
-  // Filter customers based on user role
-  const userCustomers = currentUser.role === 'marketing' 
-    ? getCustomersByUser(currentUser.id)
-    : customers;
-
-  const filteredCustomers = userCustomers.filter(customer => 
+  const { customers, loading, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
+  const { sources } = useSources();
+  
+  const filteredCustomers = customers.filter(customer => 
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (customer.company?.toLowerCase().includes(searchTerm.toLowerCase())) ||
     customer.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -30,16 +32,22 @@ export function CustomerList() {
     return sources.find(s => s.id === sourceId)?.name || 'Unknown';
   };
 
-  const getDivisionName = (divisionId: string) => {
-    return divisions.find(d => d.id === divisionId)?.name || 'Unknown';
+  const handleAddCustomer = async (data: any) => {
+    await createCustomer(data);
   };
 
-  const handleAddCustomer = (data: any) => {
-    console.log('New customer:', data);
-    toast({
-      title: "Customer added successfully",
-      description: `${data.name} has been added to your customer list.`,
-    });
+  const handleEditCustomer = async (data: any) => {
+    if (editingCustomer) {
+      await updateCustomer(editingCustomer.id, data);
+      setEditingCustomer(null);
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (deletingCustomer) {
+      await deleteCustomer(deletingCustomer.id);
+      setDeletingCustomer(null);
+    }
   };
 
   return (
@@ -74,85 +82,130 @@ export function CustomerList() {
       </Card>
 
       {/* Customer Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredCustomers.map((customer) => (
-          <Card 
-            key={customer.id} 
-            className="hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => navigate(`/customers/${customer.id}`)}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg">{customer.name}</CardTitle>
-                  {customer.company && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Building2 className="h-3 w-3" />
-                      {customer.company}
-                    </p>
+      {loading ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3 mb-4" />
+                <Skeleton className="h-8 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredCustomers.map((customer) => (
+            <Card 
+              key={customer.id} 
+              className="hover:shadow-md transition-shadow group"
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1 cursor-pointer" onClick={() => navigate(`/customers/${customer.id}`)}>
+                    <CardTitle className="text-lg">{customer.name}</CardTitle>
+                    {customer.company && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Building2 className="h-3 w-3" />
+                        {customer.company}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <StatusBadge status={customer.status} />
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 ml-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 w-7 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingCustomer(customer);
+                        }}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingCustomer(customer);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3" onClick={() => navigate(`/customers/${customer.id}`)}>
+                {/* Contact Info */}
+                <div className="space-y-2 cursor-pointer">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="h-3 w-3 text-muted-foreground" />
+                    <span className="truncate">{customer.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-3 w-3 text-muted-foreground" />
+                    <span>{customer.phone}</span>
+                  </div>
+                </div>
+
+                {/* Estimation Value */}
+                {customer.estimation_value && (
+                  <div className="flex items-center gap-2 text-sm font-medium text-success">
+                    <DollarSign className="h-3 w-3" />
+                    <span>Rp {(customer.estimation_value / 1000000).toFixed(1)}M</span>
+                  </div>
+                )}
+
+                {/* Metadata */}
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="outline" className="text-xs">
+                    {getSourceName(customer.source_id)}
+                  </Badge>
+                  {customer.sources && (
+                    <Badge variant="outline" className="text-xs">
+                      {customer.sources.name}
+                    </Badge>
                   )}
                 </div>
-                <StatusBadge status={customer.status} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Contact Info */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-3 w-3 text-muted-foreground" />
-                  <span className="truncate">{customer.email}</span>
+
+                {/* Description */}
+                {customer.description && (
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {customer.description}
+                  </p>
+                )}
+
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <span className="text-xs text-muted-foreground">
+                    Added {new Date(customer.created_at).toLocaleDateString()}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="h-7 px-2" onClick={(e) => e.stopPropagation()}>
+                      <Phone className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 px-2" onClick={(e) => e.stopPropagation()}>
+                      <Mail className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-3 w-3 text-muted-foreground" />
-                  <span>{customer.phone}</span>
-                </div>
-              </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
-              {/* Estimation Value */}
-              {customer.estimation_value && (
-                <div className="flex items-center gap-2 text-sm font-medium text-success">
-                  <DollarSign className="h-3 w-3" />
-                  <span>Rp {(customer.estimation_value / 1000000).toFixed(1)}M</span>
-                </div>
-              )}
-
-              {/* Metadata */}
-              <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="text-xs">
-                  {getSourceName(customer.source_id)}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {getDivisionName(customer.division_id)}
-                </Badge>
-              </div>
-
-              {/* Description */}
-              {customer.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {customer.description}
-                </p>
-              )}
-
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-2 border-t">
-                <span className="text-xs text-muted-foreground">
-                  Added {new Date(customer.created_at).toLocaleDateString()}
-                </span>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="h-7 px-2">
-                    <Phone className="h-3 w-3" />
-                  </Button>
-                  <Button size="sm" variant="outline" className="h-7 px-2">
-                    <Mail className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredCustomers.length === 0 && (
+      {!loading && filteredCustomers.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground">No customers found matching your search.</p>
@@ -164,6 +217,21 @@ export function CustomerList() {
         open={showAddForm} 
         onOpenChange={setShowAddForm} 
         onSubmit={handleAddCustomer} 
+      />
+
+      <AddCustomerForm 
+        open={!!editingCustomer} 
+        onOpenChange={(open) => !open && setEditingCustomer(null)} 
+        onSubmit={handleEditCustomer}
+      />
+
+      <DeleteConfirmDialog
+        open={!!deletingCustomer}
+        onOpenChange={(open) => !open && setDeletingCustomer(null)}
+        onConfirm={handleDeleteCustomer}
+        title="Delete Customer"
+        description="Are you sure you want to delete this customer"
+        itemName={deletingCustomer?.name}
       />
     </div>
   );

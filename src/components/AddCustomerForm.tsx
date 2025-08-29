@@ -34,7 +34,7 @@ type CustomerFormData = z.infer<typeof customerSchema>;
 interface AddCustomerFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: CustomerFormData) => void;
+  onSubmit: (data: CustomerFormData) => Promise<void>;
 }
 
 export function AddCustomerForm({ open, onOpenChange, onSubmit }: AddCustomerFormProps) {
@@ -51,10 +51,14 @@ export function AddCustomerForm({ open, onOpenChange, onSubmit }: AddCustomerFor
 
   const selectedProducts = form.watch('products') || [];
 
-  const handleSubmit = (data: CustomerFormData) => {
-    onSubmit(data);
-    form.reset();
-    onOpenChange(false);
+  const handleSubmit = async (data: CustomerFormData) => {
+    try {
+      await onSubmit(data);
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      // Error handling is done in the hook
+    }
   };
 
   const toggleProduct = (productId: string) => {

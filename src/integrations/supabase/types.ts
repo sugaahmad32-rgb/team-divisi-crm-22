@@ -106,6 +106,50 @@ export type Database = {
           },
         ]
       }
+      interactions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          customer_id: string
+          due_date: string | null
+          id: string
+          notes: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          customer_id: string
+          due_date?: string | null
+          id?: string
+          notes: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string
+          due_date?: string | null
+          id?: string
+          notes?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           created_at: string

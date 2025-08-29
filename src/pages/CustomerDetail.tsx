@@ -1,18 +1,79 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { CRMLayout } from "@/components/CRMLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/StatusBadge";
-import { customers, sources, divisions, users, products, interactions } from "@/data/mockData";
-import { ArrowLeft, Phone, Mail, MapPin, Building2, DollarSign, Calendar, MessageSquare, User } from "lucide-react";
+import { useCustomers, CustomerWithRelations } from "@/hooks/useCustomers";
+import { useInteractions, Interaction } from "@/hooks/useInteractions";
+import { AddInteractionForm } from "@/components/AddInteractionForm";
+import { InteractionCard } from "@/components/InteractionCard";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import { ArrowLeft, Phone, Mail, MapPin, Building2, DollarSign, Calendar, MessageSquare, User, Plus } from "lucide-react";
 
 const CustomerDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [customer, setCustomer] = useState<CustomerWithRelations | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showAddInteraction, setShowAddInteraction] = useState(false);
+  const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null);
+  const [deletingInteraction, setDeletingInteraction] = useState<Interaction | null>(null);
   
-  const customer = customers.find(c => c.id === id);
+  const { fetchCustomer } = useCustomers();
+  const { 
+    interactions, 
+    createInteraction, 
+    updateInteraction, 
+    deleteInteraction, 
+    markAsCompleted 
+  } = useInteractions(id);
   
+  useEffect(() => {
+    const loadCustomer = async () => {
+      if (id) {
+        const customerData = await fetchCustomer(id);
+        setCustomer(customerData);
+        setLoading(false);
+      }
+    };
+    loadCustomer();
+  }, [id, fetchCustomer]);
+  
+  if (loading) {
+    return (
+      <CRMLayout>
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-64" />
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-48" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-24 w-full" />
+                </CardContent>
+              </Card>
+            </div>
+            <div>
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-16 w-full" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </CRMLayout>
+    );
+  }
+
   if (!customer) {
     return (
       <CRMLayout>
@@ -23,16 +84,23 @@ const CustomerDetail = () => {
     );
   }
 
-  const source = sources.find(s => s.id === customer.source_id);
-  const division = divisions.find(d => d.id === customer.division_id);
-  const assignedUser = users.find(u => u.id === customer.assigned_to);
-  const supervisor = customer.supervisor_id ? users.find(u => u.id === customer.supervisor_id) : null;
-  const manager = customer.manager_id ? users.find(u => u.id === customer.manager_id) : null;
-  
-  const customerProducts = customer.products ? 
-    products.filter(p => customer.products!.includes(p.id)) : [];
-  
-  const customerInteractions = interactions.filter(i => i.customer_id === customer.id);
+  const handleAddInteraction = async (data: Omit<Interaction, 'id' | 'created_at' | 'updated_at'>) => {
+    await createInteraction(data);
+  };
+
+  const handleEditInteraction = async (data: Omit<Interaction, 'id' | 'created_at' | 'updated_at'>) => {
+    if (editingInteraction) {
+      await updateInteraction(editingInteraction.id, data);
+      setEditingInteraction(null);
+    }
+  };
+
+  const handleDeleteInteraction = async () => {
+    if (deletingInteraction) {
+      await deleteInteraction(deletingInteraction.id);
+      setDeletingInteraction(null);
+    }
+  };
 
   return (
     <CRMLayout>
@@ -107,22 +175,20 @@ const CustomerDetail = () => {
             </Card>
 
             {/* Products of Interest */}
-            {customerProducts.length > 0 && (
+            {customer.customer_products && customer.customer_products.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Products of Interest</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {customerProducts.map(product => (
-                      <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    {customer.customer_products.map((cp, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-muted-foreground">{product.description}</p>
+                          <p className="font-medium">{cp.products.name}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">Rp {(product.price / 1000000).toFixed(1)}M</p>
-                          <p className="text-xs text-muted-foreground">Stock: {product.stock}</p>
+                          <p className="font-medium">Rp {(cp.products.price / 1000000).toFixed(1)}M</p>
                         </div>
                       </div>
                     ))}
@@ -134,44 +200,35 @@ const CustomerDetail = () => {
             {/* Interactions Timeline */}
             <Card>
               <CardHeader>
-                <CardTitle>Interaction History</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Interaction History</CardTitle>
+                  <Button onClick={() => setShowAddInteraction(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Interaction
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                {customerInteractions.length > 0 ? (
+                {interactions.length > 0 ? (
                   <div className="space-y-4">
-                    {customerInteractions.map(interaction => {
-                      const user = users.find(u => u.id === interaction.user_id);
-                      return (
-                        <div key={interaction.id} className="border-l-2 border-border pl-4 pb-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline">{interaction.type}</Badge>
-                              <Badge variant={interaction.status === 'done' ? 'default' : 
-                                            interaction.status === 'overdue' ? 'destructive' : 'secondary'}>
-                                {interaction.status}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(interaction.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <p className="text-sm mb-2">{interaction.notes}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <User className="h-3 w-3" />
-                            <span>{user?.name}</span>
-                            {interaction.due_date && (
-                              <>
-                                <Calendar className="h-3 w-3 ml-2" />
-                                <span>Due: {new Date(interaction.due_date).toLocaleDateString()}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {interactions.map(interaction => (
+                      <InteractionCard
+                        key={interaction.id}
+                        interaction={interaction}
+                        onEdit={setEditingInteraction}
+                        onDelete={setDeletingInteraction}
+                        onMarkCompleted={markAsCompleted}
+                      />
+                    ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-center py-4">No interactions yet</p>
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground mb-4">No interactions yet</p>
+                    <Button onClick={() => setShowAddInteraction(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add First Interaction
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -200,7 +257,7 @@ const CustomerDetail = () => {
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium">Total Interactions</p>
-                    <p className="text-lg font-bold">{customerInteractions.length}</p>
+                    <p className="text-lg font-bold">{interactions.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -214,28 +271,8 @@ const CustomerDetail = () => {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm font-medium mb-1">Source</p>
-                  <Badge variant="outline">{source?.name}</Badge>
+                  <Badge variant="outline">{customer.sources?.name || 'Unknown'}</Badge>
                 </div>
-                <div>
-                  <p className="text-sm font-medium mb-1">Division</p>
-                  <Badge variant="outline">{division?.name}</Badge>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-1">Assigned To</p>
-                  <p className="text-sm text-muted-foreground">{assignedUser?.name}</p>
-                </div>
-                {supervisor && (
-                  <div>
-                    <p className="text-sm font-medium mb-1">Supervisor</p>
-                    <p className="text-sm text-muted-foreground">{supervisor.name}</p>
-                  </div>
-                )}
-                {manager && (
-                  <div>
-                    <p className="text-sm font-medium mb-1">Manager</p>
-                    <p className="text-sm text-muted-foreground">{manager.name}</p>
-                  </div>
-                )}
                 <div>
                   <p className="text-sm font-medium mb-1">Created</p>
                   <p className="text-sm text-muted-foreground">
@@ -259,7 +296,11 @@ const CustomerDetail = () => {
                   <Mail className="h-4 w-4 mr-2" />
                   Send Email
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => setShowAddInteraction(true)}
+                >
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Add Interaction
                 </Button>
@@ -267,6 +308,31 @@ const CustomerDetail = () => {
             </Card>
           </div>
         </div>
+
+        <AddInteractionForm
+          open={showAddInteraction}
+          onOpenChange={setShowAddInteraction}
+          onSubmit={handleAddInteraction}
+          customerId={customer.id}
+        />
+
+        <AddInteractionForm
+          open={!!editingInteraction}
+          onOpenChange={(open) => !open && setEditingInteraction(null)}
+          onSubmit={handleEditInteraction}
+          customerId={customer.id}
+          initialData={editingInteraction}
+          isEditing={true}
+        />
+
+        <DeleteConfirmDialog
+          open={!!deletingInteraction}
+          onOpenChange={(open) => !open && setDeletingInteraction(null)}
+          onConfirm={handleDeleteInteraction}
+          title="Delete Interaction"
+          description="Are you sure you want to delete this interaction"
+          itemName={deletingInteraction?.type}
+        />
       </div>
     </CRMLayout>
   );
