@@ -53,49 +53,61 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          assigned_to_user_id: string | null
           company: string | null
           created_at: string
+          created_by_user_id: string | null
           description: string | null
           division_id: string | null
           email: string
           estimation_value: number | null
           id: string
+          manager_user_id: string | null
           name: string
           phone: string
           source_id: string | null
           status: string
+          supervisor_user_id: string | null
           updated_at: string
           whatsapp: string | null
         }
         Insert: {
           address?: string | null
+          assigned_to_user_id?: string | null
           company?: string | null
           created_at?: string
+          created_by_user_id?: string | null
           description?: string | null
           division_id?: string | null
           email: string
           estimation_value?: number | null
           id?: string
+          manager_user_id?: string | null
           name: string
           phone: string
           source_id?: string | null
           status?: string
+          supervisor_user_id?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
         Update: {
           address?: string | null
+          assigned_to_user_id?: string | null
           company?: string | null
           created_at?: string
+          created_by_user_id?: string | null
           description?: string | null
           division_id?: string | null
           email?: string
           estimation_value?: number | null
           id?: string
+          manager_user_id?: string | null
           name?: string
           phone?: string
           source_id?: string | null
           status?: string
+          supervisor_user_id?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
@@ -151,6 +163,7 @@ export type Database = {
           status: string
           type: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           completed_at?: string | null
@@ -162,6 +175,7 @@ export type Database = {
           status?: string
           type: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           completed_at?: string | null
@@ -173,6 +187,7 @@ export type Database = {
           status?: string
           type?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -214,6 +229,44 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          division_id: string | null
+          email: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          division_id?: string | null
+          email: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          division_id?: string | null
+          email?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sources: {
         Row: {
           created_at: string
@@ -238,15 +291,56 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_manage_role: {
+        Args: {
+          manager_role: Database["public"]["Enums"]["app_role"]
+          target_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          required_role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "superadmin" | "owner" | "manager" | "supervisor" | "marketing"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -373,6 +467,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["superadmin", "owner", "manager", "supervisor", "marketing"],
+    },
   },
 } as const
