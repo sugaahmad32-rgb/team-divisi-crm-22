@@ -1,339 +1,149 @@
-import { CRMLayout } from "@/components/CRMLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Settings as SettingsIcon, 
-  Building2, 
-  Mail, 
-  Shield, 
-  Database,
-  Bell,
-  Users,
-  Palette
-} from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import React, { useState } from 'react';
+import { CRMLayout } from '@/components/CRMLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Settings as SettingsIcon, Building2, Users, Bell, Shield, Database, Moon, Sun, Monitor, Save } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/contexts/SettingsContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { toast } from '@/hooks/use-toast';
 
-const Settings = () => {
-  const { profile } = useAuth();
+export default function Settings() {
+  const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const {
+    systemSettings,
+    companySettings,
+    userPreferences,
+    notificationSettings,
+    updateSystemSetting,
+    updateCompanySettings,
+    updateUserPreferences,
+    updateNotificationSettings,
+    loading
+  } = useSettings();
+
+  const [companyForm, setCompanyForm] = useState({
+    company_name: companySettings?.company_name || '',
+    company_address: companySettings?.company_address || '',
+    company_phone: companySettings?.company_phone || '',
+    company_email: companySettings?.company_email || '',
+    company_website: companySettings?.company_website || ''
+  });
+
+  React.useEffect(() => {
+    if (companySettings) {
+      setCompanyForm({
+        company_name: companySettings.company_name || '',
+        company_address: companySettings.company_address || '',
+        company_phone: companySettings.company_phone || '',
+        company_email: companySettings.company_email || '',
+        company_website: companySettings.company_website || ''
+      });
+    }
+  }, [companySettings]);
+
+  const getSystemSetting = (key: string) => {
+    const setting = systemSettings.find(s => s.key === key);
+    return setting?.value;
+  };
+
+  if (loading) {
+    return (
+      <CRMLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Loading settings...</div>
+        </div>
+      </CRMLayout>
+    );
+  }
 
   return (
     <CRMLayout>
-      <div className="flex-1 space-y-4 p-8 pt-6">
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <SettingsIcon className="h-8 w-8" />
-              Settings
-            </h2>
-            <p className="text-muted-foreground">
-              Manage your CRM system configuration and preferences
-            </p>
-          </div>
+          <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
         </div>
-
+        
         <Tabs defaultValue="general" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="company">Company</TabsTrigger>
-            <TabsTrigger value="users">User Management</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="backup">Backup & Data</TabsTrigger>
+            <TabsTrigger value="general">
+              <SettingsIcon className="w-4 h-4 mr-2" />
+              General
+            </TabsTrigger>
+            <TabsTrigger value="company">
+              <Building2 className="w-4 h-4 mr-2" />
+              Company
+            </TabsTrigger>
           </TabsList>
-
+          
           <TabsContent value="general" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Palette className="h-5 w-5" />
-                  General Settings
-                </CardTitle>
-                <CardDescription>
-                  Configure basic system settings and preferences
-                </CardDescription>
+                <CardTitle>General Settings</CardTitle>
+                <CardDescription>Manage your general application preferences.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="system-name">System Name</Label>
-                    <Input id="system-name" defaultValue="Master Plan CRM" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Input id="timezone" defaultValue="Asia/Jakarta" />
-                  </div>
-                </div>
-                
+              <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Dark Mode</Label>
-                      <p className="text-sm text-muted-foreground">Enable dark theme for the interface</p>
-                    </div>
-                    <Switch />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Auto-Save Forms</Label>
-                      <p className="text-sm text-muted-foreground">Automatically save form data as users type</p>
-                    </div>
-                    <Switch defaultChecked />
+                  <h4 className="text-sm font-medium">Theme</h4>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant={theme === 'light' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme('light')}
+                    >
+                      <Sun className="h-4 w-4 mr-2" />
+                      Light
+                    </Button>
+                    <Button
+                      variant={theme === 'dark' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme('dark')}
+                    >
+                      <Moon className="h-4 w-4 mr-2" />
+                      Dark
+                    </Button>
+                    <Button
+                      variant={theme === 'system' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme('system')}
+                    >
+                      <Monitor className="h-4 w-4 mr-2" />
+                      System
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-
+          
           <TabsContent value="company" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  Company Information
-                </CardTitle>
-                <CardDescription>
-                  Manage your company details and branding
-                </CardDescription>
+                <CardTitle>Company Information</CardTitle>
+                <CardDescription>Update your company details and branding.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+              <CardContent className="space-y-6">
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
                     <Label htmlFor="company-name">Company Name</Label>
-                    <Input id="company-name" placeholder="Enter company name" />
+                    <Input 
+                      id="company-name" 
+                      value={companyForm.company_name}
+                      onChange={(e) => setCompanyForm(prev => ({ ...prev, company_name: e.target.value }))}
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company-website">Website</Label>
-                    <Input id="company-website" placeholder="https://example.com" />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="company-address">Address</Label>
-                  <Input id="company-address" placeholder="Company address" />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="company-phone">Phone</Label>
-                    <Input id="company-phone" placeholder="+62 xxx xxxx xxxx" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company-email">Email</Label>
-                    <Input id="company-email" type="email" placeholder="contact@company.com" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="users" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  User Management Settings
-                </CardTitle>
-                <CardDescription>
-                  Configure user registration and role settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Allow User Registration</Label>
-                      <p className="text-sm text-muted-foreground">Allow new users to register without admin approval</p>
-                    </div>
-                    <Switch />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Require Email Verification</Label>
-                      <p className="text-sm text-muted-foreground">New users must verify their email before accessing the system</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Session Timeout</Label>
-                      <p className="text-sm text-muted-foreground">Automatically log out inactive users after</p>
-                    </div>
-                    <Input className="w-32" defaultValue="60" placeholder="minutes" />
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <Label>Default Role for New Users</Label>
-                  <div className="flex gap-2">
-                    <Badge variant="outline">Marketing</Badge>
-                    <Badge variant="secondary">Supervisor</Badge>
-                    <Badge variant="secondary">Manager</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="notifications" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Notification Settings
-                </CardTitle>
-                <CardDescription>
-                  Configure email notifications and alerts
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>New Customer Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Notify managers when new customers are added</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Follow-up Reminders</Label>
-                      <p className="text-sm text-muted-foreground">Send email reminders for scheduled follow-ups</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Daily Reports</Label>
-                      <p className="text-sm text-muted-foreground">Send daily activity reports to managers</p>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email-from">Email From Address</Label>
-                  <Input id="email-from" type="email" placeholder="noreply@company.com" />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="security" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Security Settings
-                </CardTitle>
-                <CardDescription>
-                  Configure security policies and access controls
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Two-Factor Authentication</Label>
-                      <p className="text-sm text-muted-foreground">Require 2FA for all admin users</p>
-                    </div>
-                    <Switch />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Password Complexity</Label>
-                      <p className="text-sm text-muted-foreground">Enforce strong password requirements</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Login Attempt Limits</Label>
-                      <p className="text-sm text-muted-foreground">Lock accounts after failed login attempts</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <Label>Current Security Status</Label>
-                  <div className="flex gap-2">
-                    <Badge variant="default">SSL Enabled</Badge>
-                    <Badge variant="default">Database Encrypted</Badge>
-                    <Badge variant="outline">2FA Optional</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="backup" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  Backup & Data Management
-                </CardTitle>
-                <CardDescription>
-                  Manage data backups and system maintenance
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Automatic Backups</Label>
-                      <p className="text-sm text-muted-foreground">Create daily backups automatically</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Backup Frequency</Label>
-                    <div className="flex gap-2">
-                      <Badge variant="default">Daily</Badge>
-                      <Badge variant="outline">Weekly</Badge>
-                      <Badge variant="outline">Monthly</Badge>
-                    </div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <div>
-                    <Label>Database Actions</Label>
-                    <div className="flex gap-2 mt-2">
-                      <Button variant="outline">Export Data</Button>
-                      <Button variant="outline">Create Backup</Button>
-                      <Button variant="destructive">Reset System</Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Last Backup</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date().toLocaleDateString('id-ID')} at {new Date().toLocaleTimeString('id-ID')}
-                    </p>
-                  </div>
+                  <Button onClick={() => updateCompanySettings(companyForm)} className="w-full">
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Company Information
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -342,6 +152,4 @@ const Settings = () => {
       </div>
     </CRMLayout>
   );
-};
-
-export default Settings;
+}

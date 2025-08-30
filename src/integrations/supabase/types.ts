@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      company_settings: {
+        Row: {
+          company_address: string | null
+          company_email: string | null
+          company_name: string
+          company_phone: string | null
+          company_website: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_address?: string | null
+          company_email?: string | null
+          company_name: string
+          company_phone?: string | null
+          company_website?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_address?: string | null
+          company_email?: string | null
+          company_name?: string
+          company_phone?: string | null
+          company_website?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customer_products: {
         Row: {
           created_at: string
@@ -199,6 +235,45 @@ export type Database = {
           },
         ]
       }
+      notification_settings: {
+        Row: {
+          created_at: string
+          daily_digest: boolean
+          email_on_assignment: boolean
+          email_on_interaction_due: boolean
+          email_on_new_customer: boolean
+          email_on_status_change: boolean
+          id: string
+          updated_at: string
+          user_id: string
+          weekly_report: boolean
+        }
+        Insert: {
+          created_at?: string
+          daily_digest?: boolean
+          email_on_assignment?: boolean
+          email_on_interaction_due?: boolean
+          email_on_new_customer?: boolean
+          email_on_status_change?: boolean
+          id?: string
+          updated_at?: string
+          user_id: string
+          weekly_report?: boolean
+        }
+        Update: {
+          created_at?: string
+          daily_digest?: boolean
+          email_on_assignment?: boolean
+          email_on_interaction_due?: boolean
+          email_on_new_customer?: boolean
+          email_on_status_change?: boolean
+          id?: string
+          updated_at?: string
+          user_id?: string
+          weekly_report?: boolean
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
@@ -288,6 +363,75 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          email_notifications: boolean
+          id: string
+          language: string
+          preferences: Json | null
+          push_notifications: boolean
+          theme: string
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          language?: string
+          preferences?: Json | null
+          push_notifications?: boolean
+          theme?: string
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          language?: string
+          preferences?: Json | null
+          push_notifications?: boolean
+          theme?: string
+          timezone?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
