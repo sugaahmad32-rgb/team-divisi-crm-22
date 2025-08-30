@@ -8,6 +8,7 @@ import { Plus, UserCheck, Trash2, Edit } from 'lucide-react';
 import { AddUserForm } from '@/components/AddUserForm';
 import { useUsers } from '@/hooks/useUsers';
 import { useAuth } from '@/contexts/AuthContext';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 const roleColors = {
   superadmin: 'bg-red-500/10 text-red-700 dark:text-red-400',
@@ -32,9 +33,19 @@ export default function Users() {
 
   const canManageUsers = hasRole('superadmin') || hasRole('owner') || hasRole('manager');
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+
   const handleDeleteUser = async (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      await deleteUser(userId);
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (userToDelete) {
+      await deleteUser(userToDelete);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
     }
   };
 
@@ -112,7 +123,11 @@ export default function Users() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteUser(user.id)}
-                              disabled={user.role === 'superadmin' && !hasRole('superadmin')}
+                              disabled={
+                                (user.role === 'superadmin' && !hasRole('superadmin')) ||
+                                (hasRole('manager') && user.division_name !== profile?.division_name) ||
+                                user.id === profile?.user_id
+                              }
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -130,6 +145,15 @@ export default function Users() {
         <AddUserForm 
           open={showAddUser} 
           onOpenChange={setShowAddUser} 
+        />
+
+        <DeleteConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={confirmDelete}
+          title="Delete User"
+          description="Are you sure you want to delete this user? This will remove their access and cannot be undone."
+          itemName={users.find(u => u.id === userToDelete)?.display_name}
         />
       </div>
     </CRMLayout>

@@ -11,6 +11,7 @@ export interface UserProfile {
   display_name: string;
   email: string;
   division_id?: string;
+  division_name?: string;
   role?: UserRole;
 }
 
@@ -47,7 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          divisions(name)
+        `)
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -65,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setProfile({
           ...profileData,
+          division_name: profileData.divisions?.name,
           role: roleData?.role
         });
       }

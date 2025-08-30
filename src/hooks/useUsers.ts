@@ -32,10 +32,15 @@ export function useUsers() {
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
-          *,
+          user_id,
+          display_name,
+          email,
+          division_id,
+          created_at,
           divisions(name),
           user_roles(role)
-        `);
+        `)
+        .order('created_at', { ascending: false });
 
       if (profilesError) {
         console.error('Error fetching users:', profilesError);
@@ -48,12 +53,12 @@ export function useUsers() {
       }
 
       const formattedUsers: User[] = (profilesData || []).map((profile: any) => ({
-        id: profile.id,
+        id: profile.user_id,
         display_name: profile.display_name,
         email: profile.email,
         division_id: profile.division_id,
         division_name: profile.divisions?.name,
-        role: profile.user_roles?.role,
+        role: profile.user_roles?.[0]?.role,
         created_at: new Date(profile.created_at),
       }));
 
@@ -202,6 +207,23 @@ export function useUsers() {
 
   const deleteUser = async (userId: string) => {
     try {
+      // Check if user has assigned customers
+      const { data: assignedCustomers, error: customerError } = await supabase
+        .from('customers')
+        .select('id, name')
+        .or(`assigned_to_user_id.eq.${userId},created_by_user_id.eq.${userId},supervisor_user_id.eq.${userId},manager_user_id.eq.${userId}`);
+
+      if (customerError) throw customerError;
+
+      if (assignedCustomers && assignedCustomers.length > 0) {
+        toast({
+          title: "Cannot delete user",
+          description: `User has ${assignedCustomers.length} assigned customers. Reassign them first.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase.auth.admin.deleteUser(userId);
 
       if (error) {
