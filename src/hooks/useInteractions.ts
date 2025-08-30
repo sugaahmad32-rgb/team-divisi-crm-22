@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface Interaction {
   id: string;
   customer_id: string;
+  user_id?: string;
   type: 'call' | 'whatsapp' | 'email' | 'meeting' | 'followup';
   notes: string;
   status: 'pending' | 'done' | 'overdue';
@@ -48,9 +49,18 @@ export const useInteractions = (customerId?: string) => {
 
   const createInteraction = async (interactionData: Omit<Interaction, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Get current user ID
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('interactions')
-        .insert([interactionData])
+        .insert([{
+          ...interactionData,
+          user_id: user.id
+        }])
         .select()
         .single();
 

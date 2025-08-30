@@ -17,6 +17,10 @@ export interface Customer {
   description?: string;
   created_at: string;
   updated_at: string;
+  assigned_to_user_id?: string;
+  created_by_user_id?: string;
+  supervisor_user_id?: string;
+  manager_user_id?: string;
 }
 
 export interface CustomerWithRelations extends Customer {
@@ -125,12 +129,20 @@ export const useCustomers = () => {
     try {
       const { products, ...customer } = customerData;
       
+      // Get current user ID
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error('User not authenticated');
+      }
+      
       // Create customer
       const { data: customerResult, error: customerError } = await supabase
         .from('customers')
         .insert([{
           ...customer,
           estimation_value: customer.estimation_value ? parseInt(customer.estimation_value.toString()) : null,
+          created_by_user_id: user.id,
+          assigned_to_user_id: user.id, // Default to current user, can be changed later
         }])
         .select()
         .single();

@@ -2,23 +2,33 @@ import { MetricCard } from "./MetricCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "./StatusBadge";
-import { customers, interactions, currentUser, getCustomersByUser, getOverdueFollowups, getTodayFollowups } from "@/data/mockData";
 import { Users, DollarSign, TrendingUp, Calendar, AlertTriangle } from "lucide-react";
 import { CustomerStatus } from "@/types/crm";
+import { useCustomers } from "@/hooks/useCustomers";
+import { useInteractions } from "@/hooks/useInteractions";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Dashboard() {
-  // Filter data based on user role
-  const userCustomers = currentUser.role === 'marketing' 
-    ? getCustomersByUser(currentUser.id)
+  const { customers, loading: customersLoading } = useCustomers();
+  const { interactions, loading: interactionsLoading } = useInteractions();
+  const { profile } = useAuth();
+
+  if (customersLoading || interactionsLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Filter data based on user role - for marketing, only show their assigned customers
+  const userCustomers = profile?.role === 'marketing' 
+    ? customers.filter(c => c.assigned_to_user_id === profile.user_id)
     : customers;
 
-  const userOverdueFollowups = currentUser.role === 'marketing' 
-    ? getOverdueFollowups(currentUser.id)
-    : getOverdueFollowups();
-
-  const userTodayFollowups = currentUser.role === 'marketing'
-    ? getTodayFollowups(currentUser.id) 
-    : getTodayFollowups();
+  const userInteractions = profile?.role === 'marketing'
+    ? interactions.filter(i => i.user_id === profile.user_id)
+    : interactions;
 
   // Calculate metrics
   const totalCustomers = userCustomers.length;
@@ -33,8 +43,25 @@ export function Dashboard() {
     ? ((statusBreakdown.deal || 0) / userCustomers.length * 100) 
     : 0;
 
-  const recentFollowups = interactions
-    .filter(i => currentUser.role !== 'marketing' || i.user_id === currentUser.id)
+  // Get today's date for filtering
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const todayFollowups = userInteractions.filter(i => {
+    if (!i.due_date) return false;
+    const dueDate = new Date(i.due_date);
+    return dueDate >= today && dueDate < tomorrow && i.status === 'pending';
+  });
+
+  const overdueFollowups = userInteractions.filter(i => {
+    if (!i.due_date) return false;
+    const dueDate = new Date(i.due_date);
+    return dueDate < today && i.status === 'pending';
+  });
+
+  const recentInteractions = userInteractions
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 5);
 
@@ -42,7 +69,7 @@ export function Dashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, {currentUser.name}</p>
+        <p className="text-muted-foreground">Welcome back, {profile?.display_name}</p>
       </div>
 
       {/* Metrics Grid */}
@@ -68,9 +95,9 @@ export function Dashboard() {
         />
         <MetricCard
           title="Overdue Follow-ups"
-          value={userOverdueFollowups.length}
+          value={overdueFollowups.length}
           icon={AlertTriangle}
-          variant={userOverdueFollowups.length > 0 ? "danger" : "default"}
+          variant={overdueFollowups.length > 0 ? "danger" : "default"}
         />
       </div>
 
@@ -105,11 +132,11 @@ export function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {userTodayFollowups.length === 0 ? (
+            {todayFollowups.length === 0 ? (
               <p className="text-sm text-muted-foreground">No follow-ups scheduled for today</p>
             ) : (
               <div className="space-y-3">
-                {userTodayFollowups.slice(0, 3).map((followup) => {
+                {todayFollowups.slice(0, 3).map((followup) => {
                   const customer = customers.find(c => c.id === followup.customer_id);
                   return (
                     <div key={followup.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
@@ -136,7 +163,7 @@ export function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {recentFollowups.map((interaction) => {
+            {recentInteractions.map((interaction) => {
               const customer = customers.find(c => c.id === interaction.customer_id);
               return (
                 <div key={interaction.id} className="flex items-center justify-between p-3 rounded-lg border">
