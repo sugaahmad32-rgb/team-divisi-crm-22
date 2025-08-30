@@ -12,6 +12,7 @@ import Products from "./pages/Products";
 import Sources from "./pages/Sources";
 import Divisions from "./pages/Divisions";
 import Users from "./pages/Users";
+import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +60,11 @@ const App = () => (
             <Route path="/users" element={
               <ProtectedRoute requiredRole="manager">
                 <Users />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute requiredRole="manager">
+                <Settings />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
