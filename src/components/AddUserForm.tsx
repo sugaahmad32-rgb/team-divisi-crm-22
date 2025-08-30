@@ -130,16 +130,16 @@ export function AddUserForm({ open, onOpenChange }: AddUserFormProps) {
           <div className="space-y-2">
             <Label htmlFor="division">Division (Optional)</Label>
             <Select
-              value={formData.division_id || ""}
+              value={formData.division_id || "none"}
               onValueChange={(value) => 
-                setFormData({ ...formData, division_id: value || undefined })
+                setFormData({ ...formData, division_id: value === "none" ? undefined : value })
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select division" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No Division</SelectItem>
+                <SelectItem value="none">No Division</SelectItem>
                 {divisions.map((division) => (
                   <SelectItem key={division.id} value={division.id}>
                     {division.name}
