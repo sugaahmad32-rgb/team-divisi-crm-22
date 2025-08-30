@@ -320,6 +320,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_superadmin_role: {
+        Args: { user_email: string }
+        Returns: undefined
+      }
       can_manage_role: {
         Args: {
           manager_role: Database["public"]["Enums"]["app_role"]
