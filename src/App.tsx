@@ -15,6 +15,7 @@ import Sources from "./pages/Sources";
 import Divisions from "./pages/Divisions";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
+import Followups from "./pages/Followups";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +55,11 @@ const App = () => (
                 <Route path="/sources" element={
                   <ProtectedRoute>
                     <Sources />
+                  </ProtectedRoute>
+                } />
+                <Route path="/followups" element={
+                  <ProtectedRoute>
+                    <Followups />
                   </ProtectedRoute>
                 } />
                 <Route path="/divisions" element={
