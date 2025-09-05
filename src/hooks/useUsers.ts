@@ -29,6 +29,7 @@ export function useUsers() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
+      // First get all profiles with divisions
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -37,13 +38,12 @@ export function useUsers() {
           email,
           division_id,
           created_at,
-          divisions(name),
-          user_roles(role)
+          divisions(name)
         `)
         .order('created_at', { ascending: false });
 
       if (profilesError) {
-        console.error('Error fetching users:', profilesError);
+        console.error('Error fetching profiles:', profilesError);
         toast({
           title: "Error",
           description: "Failed to fetch users",
@@ -52,13 +52,31 @@ export function useUsers() {
         return;
       }
 
+      // Get all user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) {
+        console.error('Error fetching roles:', rolesError);
+        // Don't return here, we can still show users without roles
+      }
+
+      // Create a map of user_id to role for easy lookup
+      const roleMap = new Map();
+      if (rolesData) {
+        rolesData.forEach((roleRecord: any) => {
+          roleMap.set(roleRecord.user_id, roleRecord.role);
+        });
+      }
+
       const formattedUsers: User[] = (profilesData || []).map((profile: any) => ({
         id: profile.user_id,
         display_name: profile.display_name,
         email: profile.email,
         division_id: profile.division_id,
         division_name: profile.divisions?.name,
-        role: profile.user_roles?.[0]?.role,
+        role: roleMap.get(profile.user_id),
         created_at: new Date(profile.created_at),
       }));
 
