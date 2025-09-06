@@ -16,6 +16,7 @@ import Divisions from "./pages/Divisions";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import Followups from "./pages/Followups";
+import Analytics from "./pages/Analytics";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -60,6 +61,11 @@ const App = () => (
                 <Route path="/followups" element={
                   <ProtectedRoute>
                     <Followups />
+                  </ProtectedRoute>
+                } />
+                <Route path="/analytics" element={
+                  <ProtectedRoute>
+                    <Analytics />
                   </ProtectedRoute>
                 } />
                 <Route path="/divisions" element={

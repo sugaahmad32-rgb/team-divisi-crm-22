@@ -459,6 +459,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sessions: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          expires_at: string
+          id: string
+          impersonated_user_id: string
+          ip_address: string | null
+          is_active: boolean
+          original_user_id: string
+          session_token: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          expires_at?: string
+          id?: string
+          impersonated_user_id: string
+          ip_address?: string | null
+          is_active?: boolean
+          original_user_id: string
+          session_token: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          expires_at?: string
+          id?: string
+          impersonated_user_id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          original_user_id?: string
+          session_token?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -467,6 +506,10 @@ export type Database = {
       assign_superadmin_role: {
         Args: { user_email: string }
         Returns: undefined
+      }
+      can_impersonate_user: {
+        Args: { impersonator_id: string; target_user_id: string }
+        Returns: boolean
       }
       can_manage_role: {
         Args: {

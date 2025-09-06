@@ -3,6 +3,9 @@ import { BarChart3, Users, Calendar, Settings, Building2, UserCheck, TrendingUp,
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { SwitchUserButton } from "@/components/SwitchUserButton";
+import { useSwitchUser } from "@/hooks/useSwitchUser";
+import { Badge } from "@/components/ui/badge";
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3 },
@@ -23,6 +26,7 @@ export function CRMSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, signOut, hasRole } = useAuth();
+  const { isImpersonating } = useSwitchUser();
   const showAdminMenu = hasRole('superadmin') || hasRole('owner') || hasRole('manager');
 
   return (
@@ -33,19 +37,29 @@ export function CRMSidebar() {
             <Building2 className="h-8 w-8 text-primary" />
             <div>
               <h2 className="text-lg font-semibold text-sidebar-foreground">Master Plan CRM</h2>
-              <p className="text-xs text-sidebar-foreground/60">
-                {profile?.display_name} • {profile?.role}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-sidebar-foreground/60">
+                  {profile?.display_name} • {profile?.role}
+                </p>
+                {isImpersonating && (
+                  <Badge variant="destructive" className="text-xs">
+                    Viewing As User
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={signOut}
-            className="h-8 w-8 p-0"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <SwitchUserButton />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={signOut}
+              className="h-8 w-8 p-0"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </SidebarHeader>
       
