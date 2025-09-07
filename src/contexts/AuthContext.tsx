@@ -67,9 +67,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq('user_id', userId)
           .maybeSingle();
 
+        // Get division name separately if division_id exists
+        let divisionName = undefined;
+        if (profileData.division_id) {
+          const { data: divisionData } = await supabase
+            .from('divisions')
+            .select('name')
+            .eq('id', profileData.division_id)
+            .maybeSingle();
+          divisionName = divisionData?.name;
+        }
+
         setProfile({
           ...profileData,
-          division_name: profileData.divisions?.name,
+          division_name: divisionName,
           role: roleData?.role
         });
       }

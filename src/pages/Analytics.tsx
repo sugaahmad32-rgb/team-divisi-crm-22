@@ -62,7 +62,7 @@ export default function Analytics() {
           estimation_value,
           created_at,
           source_id,
-          sources(name)
+          sources!fk_customers_source(name)
         `)
         .gte('created_at', startDate.toISOString());
 

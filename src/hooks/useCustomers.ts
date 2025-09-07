@@ -41,8 +41,8 @@ export const useCustomers = () => {
         .from('customers')
         .select(`
           *,
-          sources (name),
-          divisions (name),
+          sources!fk_customers_source (name),
+          divisions!fk_customers_division (name),
           customer_products (
             products (name, price)
           )
@@ -80,8 +80,8 @@ export const useCustomers = () => {
         .from('customers')
         .select(`
           *,
-          sources (name),
-          divisions (name),
+          sources!fk_customers_source (name),
+          divisions!fk_customers_division (name),
           customer_products (
             products (name, price)
           )

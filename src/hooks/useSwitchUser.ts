@@ -41,17 +41,10 @@ export function useSwitchUser() {
     try {
       setLoading(true);
       
-      // Get all users that current user can impersonate
+      // Get all users that current user can impersonate - use separate queries to avoid join issues
       const { data: usersData, error } = await supabase
         .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          email,
-          division_id,
-          divisions(name),
-          user_roles(role)
-        `)
+        .select('user_id, display_name, email, division_id')
         .neq('user_id', user.id); // Exclude current user
 
       if (error) throw error;
@@ -68,16 +61,29 @@ export function useSwitchUser() {
           });
 
         if (!permError && canImpersonate) {
-          const userRole = userData.user_roles && userData.user_roles.length > 0 
-            ? (userData.user_roles[0] as any).role 
-            : 'marketing';
+          // Get user role separately
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userData.user_id)
+            .limit(1);
+          
+          // Get division name separately
+          const { data: divisionData } = await supabase
+            .from('divisions')
+            .select('name')
+            .eq('id', userData.division_id)
+            .limit(1);
+          
+          const userRole = roleData && roleData.length > 0 ? roleData[0].role : 'marketing';
+          const divisionName = divisionData && divisionData.length > 0 ? divisionData[0].name : undefined;
           
           filteredUsers.push({
             id: userData.user_id,
             display_name: userData.display_name,
             email: userData.email,
             role: userRole,
-            division_name: userData.divisions?.name
+            division_name: divisionName
           });
         }
       }
@@ -230,21 +236,20 @@ export function useSwitchUser() {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          email,
-          division_id,
-          user_roles(role)
-        `)
+        .select('user_id, display_name, email, division_id')
         .eq('user_id', currentSession.impersonated_user_id)
         .single();
 
       if (error) throw error;
 
-      const userRole = profile.user_roles && profile.user_roles.length > 0 
-        ? (profile.user_roles[0] as any).role 
-        : 'marketing';
+      // Get user role separately 
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', currentSession.impersonated_user_id)
+        .limit(1);
+
+      const userRole = roleData && roleData.length > 0 ? roleData[0].role : 'marketing';
 
       return {
         id: profile.user_id,
