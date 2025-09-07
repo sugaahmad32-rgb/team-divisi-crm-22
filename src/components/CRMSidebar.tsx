@@ -28,6 +28,13 @@ export function CRMSidebar() {
   const { profile, signOut, hasRole } = useAuth();
   const { isImpersonating } = useSwitchUser();
   const showAdminMenu = hasRole('superadmin') || hasRole('owner') || hasRole('manager');
+  
+  // Debug logging
+  console.log('🎯 Sidebar Debug - Profile:', profile);
+  console.log('🎯 Sidebar Debug - hasRole(superadmin):', hasRole('superadmin'));
+  console.log('🎯 Sidebar Debug - hasRole(owner):', hasRole('owner'));
+  console.log('🎯 Sidebar Debug - hasRole(manager):', hasRole('manager'));
+  console.log('🎯 Sidebar Debug - showAdminMenu:', showAdminMenu);
 
   return (
     <Sidebar>

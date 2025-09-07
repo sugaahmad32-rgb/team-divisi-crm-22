@@ -46,46 +46,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('🔍 Fetching profile for userId:', userId);
+      
+      // Check for impersonation session first
+      const impersonationData = localStorage.getItem('user_impersonation');
+      let targetUserId = userId;
+      
+      if (impersonationData) {
+        try {
+          const parsed = JSON.parse(impersonationData);
+          if (parsed.expires_at && new Date(parsed.expires_at) > new Date()) {
+            targetUserId = parsed.impersonated_user_id;
+            console.log('👤 Using impersonated user ID:', targetUserId);
+          } else {
+            console.log('⏰ Impersonation session expired, clearing...');
+            localStorage.removeItem('user_impersonation');
+          }
+        } catch (e) {
+          console.error('Error parsing impersonation data:', e);
+          localStorage.removeItem('user_impersonation');
+        }
+      }
+
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select(`
           *,
-          divisions(name)
+          divisions!division_id(name)
         `)
-        .eq('user_id', userId)
+        .eq('user_id', targetUserId)
         .maybeSingle();
 
       if (profileError) {
-        console.error('Error fetching profile:', profileError);
+        console.error('❌ Error fetching profile:', profileError);
         return;
       }
+
+      console.log('📋 Profile data received:', profileData);
 
       if (profileData) {
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', userId)
+          .eq('user_id', targetUserId)
           .maybeSingle();
 
-        // Get division name separately if division_id exists
+        console.log('🔐 Role data received:', roleData);
+
+        // Get division name from the joined data
         let divisionName = undefined;
-        if (profileData.division_id) {
-          const { data: divisionData } = await supabase
-            .from('divisions')
-            .select('name')
-            .eq('id', profileData.division_id)
-            .maybeSingle();
-          divisionName = divisionData?.name;
+        if (profileData.divisions && Array.isArray(profileData.divisions) && profileData.divisions.length > 0) {
+          divisionName = profileData.divisions[0].name;
         }
 
-        setProfile({
+        const finalProfile = {
           ...profileData,
           division_name: divisionName,
           role: roleData?.role
-        });
+        };
+
+        console.log('✅ Final profile set:', finalProfile);
+        setProfile(finalProfile);
+      } else {
+        console.log('❌ No profile data found for user:', targetUserId);
       }
     } catch (error) {
-      console.error('Error in fetchProfile:', error);
+      console.error('💥 Error in fetchProfile:', error);
     }
   };
 
