@@ -68,12 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
+      // First try to get profile data without the problematic join
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          divisions!division_id(name)
-        `)
+        .select('*')
         .eq('user_id', targetUserId)
         .maybeSingle();
 
@@ -93,10 +91,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         console.log('🔐 Role data received:', roleData);
 
-        // Get division name from the joined data
+        // Get division name separately if division_id exists
         let divisionName = undefined;
-        if (profileData.divisions && Array.isArray(profileData.divisions) && profileData.divisions.length > 0) {
-          divisionName = profileData.divisions[0].name;
+        if (profileData.division_id) {
+          const { data: divisionData } = await supabase
+            .from('divisions')
+            .select('name')
+            .eq('id', profileData.division_id)
+            .maybeSingle();
+          divisionName = divisionData?.name;
+          console.log('🏢 Division data received:', divisionData);
         }
 
         const finalProfile = {
