@@ -29,17 +29,10 @@ export function useUsers() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // First get all profiles with divisions
+      // First get all profiles without problematic join
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          email,
-          division_id,
-          created_at,
-          divisions(name)
-        `)
+        .select('user_id, display_name, email, division_id, created_at')
         .order('created_at', { ascending: false });
 
       if (profilesError) {
@@ -70,12 +63,26 @@ export function useUsers() {
         });
       }
 
+      // Get division names separately
+      const divisionIds = [...new Set((profilesData || []).map(p => p.division_id).filter(Boolean))];
+      const { data: divisionsData } = await supabase
+        .from('divisions')
+        .select('id, name')
+        .in('id', divisionIds);
+
+      const divisionMap = new Map();
+      if (divisionsData) {
+        divisionsData.forEach((div: any) => {
+          divisionMap.set(div.id, div.name);
+        });
+      }
+
       const formattedUsers: User[] = (profilesData || []).map((profile: any) => ({
         id: profile.user_id,
         display_name: profile.display_name,
         email: profile.email,
         division_id: profile.division_id,
-        division_name: profile.divisions?.name,
+        division_name: profile.division_id ? divisionMap.get(profile.division_id) : undefined,
         role: roleMap.get(profile.user_id),
         created_at: new Date(profile.created_at),
       }));

@@ -68,15 +68,18 @@ export function useSwitchUser() {
             .eq('user_id', userData.user_id)
             .limit(1);
           
-          // Get division name separately
-          const { data: divisionData } = await supabase
-            .from('divisions')
-            .select('name')
-            .eq('id', userData.division_id)
-            .limit(1);
+          // Get division name separately if division_id exists
+          let divisionName = undefined;
+          if (userData.division_id) {
+            const { data: divisionData } = await supabase
+              .from('divisions')
+              .select('name')
+              .eq('id', userData.division_id)
+              .maybeSingle();
+            divisionName = divisionData?.name;
+          }
           
           const userRole = roleData && roleData.length > 0 ? roleData[0].role : 'marketing';
-          const divisionName = divisionData && divisionData.length > 0 ? divisionData[0].name : undefined;
           
           filteredUsers.push({
             id: userData.user_id,

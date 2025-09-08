@@ -30,7 +30,18 @@ export function SwitchUserButton() {
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [open, setOpen] = useState(false);
 
+  // Debug logging
+  console.log('🔄 SwitchUserButton Debug - Profile:', profile);
+  console.log('🔄 SwitchUserButton Debug - Available Users:', availableUsers);
+  console.log('🔄 SwitchUserButton Debug - Loading:', loading);
+  console.log('🔄 SwitchUserButton Debug - Is Impersonating:', isImpersonating);
+
   if (!profile || (!availableUsers.length && !isImpersonating)) {
+    console.log('🔄 SwitchUserButton - Hidden because:', {
+      hasProfile: !!profile,
+      availableUsersLength: availableUsers.length,
+      isImpersonating
+    });
     return null;
   }
 
