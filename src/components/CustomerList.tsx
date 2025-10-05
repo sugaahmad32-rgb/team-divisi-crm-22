@@ -163,7 +163,7 @@ export function CustomerList() {
                 {customer.estimation_value && (
                   <div className="flex items-center gap-2 text-sm font-medium text-success">
                     <DollarSign className="h-3 w-3" />
-                    <span>{formatRupiah(customer.estimation_value, { compact: true })}</span>
+                    <span>{formatRupiah(customer.estimation_value)}</span>
                   </div>
                 )}
 

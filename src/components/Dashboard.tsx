@@ -7,6 +7,7 @@ import { CustomerStatus } from "@/types/crm";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useInteractions } from "@/hooks/useInteractions";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatRupiah } from "@/lib/currency";
 
 export function Dashboard() {
   const { customers, loading: customersLoading } = useCustomers();
@@ -82,11 +83,10 @@ export function Dashboard() {
         />
         <MetricCard
           title="Pipeline Value"
-          value={pipelineValue}
+          value={formatRupiah(pipelineValue)}
           icon={DollarSign}
           variant="success"
           trend={{ value: 8, label: "from last month" }}
-          isCurrency={true}
         />
         <MetricCard
           title="Conversion Rate"

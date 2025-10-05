@@ -85,7 +85,7 @@ const Products = () => {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                       <DollarSign className="h-4 w-4 text-green-600" />
-                      <span className="font-semibold">{formatRupiah(product.price, { compact: true })}</span>
+                      <span className="font-semibold">{formatRupiah(product.price)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Archive className="h-4 w-4 text-blue-600" />

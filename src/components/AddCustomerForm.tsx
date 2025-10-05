@@ -292,7 +292,7 @@ export function AddCustomerForm({ open, onOpenChange, onSubmit }: AddCustomerFor
                     >
                       <div className="font-medium text-sm">{product.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {formatRupiah(product.price, { compact: true })}
+                        {formatRupiah(product.price)}
                       </div>
                     </div>
                   ))}

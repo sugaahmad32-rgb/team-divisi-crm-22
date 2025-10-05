@@ -24,9 +24,7 @@ const variantStyles = {
 };
 
 export function MetricCard({ title, value, icon: Icon, trend, variant = 'default', className, isCurrency = false }: MetricCardProps) {
-  const displayValue = isCurrency && typeof value === 'number' 
-    ? formatRupiah(value, { compact: true })
-    : typeof value === 'number' 
+  const displayValue = typeof value === 'number' 
     ? value.toLocaleString() 
     : value;
 

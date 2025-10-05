@@ -192,7 +192,7 @@ const CustomerDetail = () => {
                           <p className="font-medium">{cp.products.name}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">{formatRupiah(cp.products.price, { compact: true })}</p>
+                          <p className="font-medium">{formatRupiah(cp.products.price)}</p>
                         </div>
                       </div>
                     ))}
@@ -252,7 +252,7 @@ const CustomerDetail = () => {
                     <div>
                       <p className="text-sm font-medium">Estimation Value</p>
                       <p className="text-lg font-bold text-success">
-                        {formatRupiah(customer.estimation_value, { compact: true })}
+                        {formatRupiah(customer.estimation_value)}
                       </p>
                     </div>
                   </div>
