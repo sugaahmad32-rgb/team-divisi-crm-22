@@ -12,6 +12,7 @@ import { AddInteractionForm } from "@/components/AddInteractionForm";
 import { InteractionCard } from "@/components/InteractionCard";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { ArrowLeft, Phone, Mail, MapPin, Building2, DollarSign, Calendar, MessageSquare, User, Plus } from "lucide-react";
+import { formatRupiah } from "@/lib/currency";
 
 const CustomerDetail = () => {
   const { id } = useParams();
@@ -191,7 +192,7 @@ const CustomerDetail = () => {
                           <p className="font-medium">{cp.products.name}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">Rp {(cp.products.price / 1000000).toFixed(1)}M</p>
+                          <p className="font-medium">{formatRupiah(cp.products.price, { compact: true })}</p>
                         </div>
                       </div>
                     ))}
@@ -251,7 +252,7 @@ const CustomerDetail = () => {
                     <div>
                       <p className="text-sm font-medium">Estimation Value</p>
                       <p className="text-lg font-bold text-success">
-                        Rp {(customer.estimation_value / 1000000).toFixed(1)}M
+                        {formatRupiah(customer.estimation_value, { compact: true })}
                       </p>
                     </div>
                   </div>

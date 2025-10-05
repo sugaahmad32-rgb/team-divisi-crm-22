@@ -8,6 +8,7 @@ import { useProducts, Product } from "@/hooks/useProducts";
 import { AddProductForm } from "@/components/AddProductForm";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatRupiah } from "@/lib/currency";
 
 const Products = () => {
   const { products, loading, createProduct, updateProduct, deleteProduct } = useProducts();
@@ -33,9 +34,6 @@ const Products = () => {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return (price / 1000000).toFixed(1) + 'M';
-  };
 
   return (
     <CRMLayout>
@@ -87,7 +85,7 @@ const Products = () => {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                       <DollarSign className="h-4 w-4 text-green-600" />
-                      <span className="font-semibold">Rp {formatPrice(product.price)}</span>
+                      <span className="font-semibold">{formatRupiah(product.price, { compact: true })}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Archive className="h-4 w-4 text-blue-600" />

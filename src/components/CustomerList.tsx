@@ -11,6 +11,7 @@ import { AddCustomerForm } from "./AddCustomerForm";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { useCustomers, Customer } from "@/hooks/useCustomers";
 import { useSources } from "@/hooks/useSources";
+import { formatRupiah } from "@/lib/currency";
 
 export function CustomerList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -162,7 +163,7 @@ export function CustomerList() {
                 {customer.estimation_value && (
                   <div className="flex items-center gap-2 text-sm font-medium text-success">
                     <DollarSign className="h-3 w-3" />
-                    <span>Rp {(customer.estimation_value / 1000000).toFixed(1)}M</span>
+                    <span>{formatRupiah(customer.estimation_value, { compact: true })}</span>
                   </div>
                 )}
 

@@ -86,6 +86,7 @@ export function Dashboard() {
           icon={DollarSign}
           variant="success"
           trend={{ value: 8, label: "from last month" }}
+          isCurrency={true}
         />
         <MetricCard
           title="Conversion Rate"

@@ -13,6 +13,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useDivisions } from "@/hooks/useDivisions";
 import { CustomerStatus } from "@/types/crm";
 import { X } from "lucide-react";
+import { formatRupiah } from "@/lib/currency";
 
 const customerSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -291,7 +292,7 @@ export function AddCustomerForm({ open, onOpenChange, onSubmit }: AddCustomerFor
                     >
                       <div className="font-medium text-sm">{product.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        Rp {(product.price / 1000000).toFixed(1)}M
+                        {formatRupiah(product.price, { compact: true })}
                       </div>
                     </div>
                   ))}

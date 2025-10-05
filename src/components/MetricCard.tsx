@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRupiah } from "@/lib/currency";
 
 interface MetricCardProps {
   title: string;
@@ -12,6 +13,7 @@ interface MetricCardProps {
   };
   variant?: 'default' | 'success' | 'warning' | 'danger';
   className?: string;
+  isCurrency?: boolean; // Indicates if value should be formatted as Rupiah
 }
 
 const variantStyles = {
@@ -21,7 +23,13 @@ const variantStyles = {
   danger: "border-destructive bg-destructive/5"
 };
 
-export function MetricCard({ title, value, icon: Icon, trend, variant = 'default', className }: MetricCardProps) {
+export function MetricCard({ title, value, icon: Icon, trend, variant = 'default', className, isCurrency = false }: MetricCardProps) {
+  const displayValue = isCurrency && typeof value === 'number' 
+    ? formatRupiah(value, { compact: true })
+    : typeof value === 'number' 
+    ? value.toLocaleString() 
+    : value;
+
   return (
     <Card className={cn(variantStyles[variant], className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -32,9 +40,7 @@ export function MetricCard({ title, value, icon: Icon, trend, variant = 'default
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">
-          {typeof value === 'number' && value > 1000000 
-            ? `${(value / 1000000).toFixed(1)}M` 
-            : value.toLocaleString()}
+          {displayValue}
         </div>
         {trend && (
           <p className={cn(
