@@ -8,37 +8,43 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Mail, Lock, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('signin');
-  
-  const { signIn, signUp, user } = useAuth();
+  const {
+    signIn,
+    signUp,
+    user
+  } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     if (user) {
-      navigate('/', { replace: true });
+      navigate('/', {
+        replace: true
+      });
     }
   }, [user, navigate]);
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const { error } = await signIn(email, password);
-      
+      const {
+        error
+      } = await signIn(email, password);
       if (!error) {
         toast({
           title: "Welcome back!",
-          description: "You have been successfully signed in.",
+          description: "You have been successfully signed in."
         });
-        navigate('/', { replace: true });
+        navigate('/', {
+          replace: true
+        });
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -46,18 +52,17 @@ export default function Auth() {
       setLoading(false);
     }
   };
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const { error } = await signUp(email, password, displayName);
-      
+      const {
+        error
+      } = await signUp(email, password, displayName);
       if (!error) {
         toast({
           title: "Account created successfully!",
-          description: "Please check your email to verify your account.",
+          description: "Please check your email to verify your account."
         });
         setActiveTab('signin');
       }
@@ -67,9 +72,7 @@ export default function Auth() {
       setLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
           <div className="flex justify-center">
@@ -99,15 +102,7 @@ export default function Auth() {
                     <Label htmlFor="signin-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
+                      <Input id="signin-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
                     </div>
                   </div>
                   
@@ -115,23 +110,11 @@ export default function Auth() {
                     <Label htmlFor="signin-password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signin-password"
-                        type="password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
+                      <Input id="signin-password" type="password" placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required />
                     </div>
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={loading}
-                  >
+                  <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </form>
@@ -143,15 +126,7 @@ export default function Auth() {
                     <Label htmlFor="signup-name">Display Name</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
+                      <Input id="signup-name" type="text" placeholder="Enter your full name" value={displayName} onChange={e => setDisplayName(e.target.value)} className="pl-10" required />
                     </div>
                   </div>
                   
@@ -159,15 +134,7 @@ export default function Auth() {
                     <Label htmlFor="signup-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
+                      <Input id="signup-email" type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
                     </div>
                   </div>
                   
@@ -175,24 +142,11 @@ export default function Auth() {
                     <Label htmlFor="signup-password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="Create a password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
-                        required
-                        minLength={6}
-                      />
+                      <Input id="signup-password" type="password" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required minLength={6} />
                     </div>
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={loading}
-                  >
+                  <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
                 </form>
@@ -202,9 +156,8 @@ export default function Auth() {
         </Card>
         
         <div className="text-center text-sm text-muted-foreground">
-          <p>Use demo account: bajra3131@gmail.com / sukses5758</p>
+          
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
